@@ -6,13 +6,11 @@ import requests
 from bs4 import BeautifulSoup
 import re
 import json
-#ActionChainsを使う時は、下記のようにActionChainsのクラスをロードする
-#from selenium.webdriver.common.action_chains import ActionChains
+import settings
 from selenium.webdriver.support.ui import Select
 from selenium.webdriver.support.select import Select
 from selenium.webdriver.common.keys import Keys
-import settings
-#from selenium.webdriver.chrome.options import Options
+from selenium.webdriver.chrome.options import Options
 
 LOGIN_ID = settings.ID
 PASSWORD = settings.PWD
@@ -20,15 +18,13 @@ TOKEN = settings.TOKEN
 
 class JobCan:
     def __init__(self):
-    #     option = Options()
-    #     option.add_argument('--headless')
+         option = Options()
+         option.add_argument('--headless')
          self.driver = webdriver.Chrome()
-
 #変数error_flgはエラーの判定に使うフラグ。最初はFalseを設定しておく
 #そして途中でエラーが発生した場合はTrueを設定して、以降の処理をスキップする判定に使用
     def open_url(self,url):
         self.driver.get(url)
-
     def login(self,id,pwd):
         error_flg = False
         if error_flg is False:
@@ -42,11 +38,9 @@ class JobCan:
             except Exception:
                 print('ユーザー名、パスワード入力時にエラーが発生しました。')
                 error_flg = True
-
     def select_shift_page(self):
         self.driver.find_element_by_xpath('//*[@class="menuCenter"]').click()
         self.driver.find_element_by_link_text('シフト予定表').click()
-
     def select_line_shift(self):
 #ラインシフト表示
         dropdown = self.driver.find_element_by_id("type-combo")
@@ -80,20 +74,17 @@ class JobCan:
 #表示のボタンを押す
     def display_button(self):
         self.driver.find_element_by_xpath('//*[@class="btn btn-info"]').click()
-
     def save_screenshot(self):
 # 下までスクロール
         el_html = self.driver.find_element_by_tag_name('html')
         for i in range(5):
             el_html.send_keys(Keys.PAGE_DOWN)
-
         width = self.driver.execute_script("return document.body.scrollWidth;")
         height = self.driver.execute_script("return document.body.scrollHeight;")
 # set window size
         self.driver.set_window_size(width,height)
 #スクショを取る
         self.driver.save_screenshot("FILENAME.png")
-
     def get_shift_list(self):
 #driver.page_sourceで今開いてるページのソースを取得できる
         page_source = self.driver.page_source
@@ -103,23 +94,20 @@ class JobCan:
 #find_allで<tr>タグを全部とる(リストで返ってくる)
 # #<tr>～</tr>で1個の文字列
         member_list = shift_list.find_all ("tr")[2:]
-# #出力内容から改善策を考えた
 # #空リストをつくる
         result = []
 # #member_listをfor文で回す
-# #for文はリスト型データを回すのに役立つ(長さが限定的、決まっている) while文は長さが不確定のモノ(無限ループ)
         for member in member_list:
 # #<td>はテーブルの1マス1マスを示す
             coloms = member.find_all("td")
             for info in range(2):
                 result.append(coloms[info])
-# #空リスト??をつくる
         text_info = ""
         for arrange in result:
             shift_info = arrange.get_text()
             text_info+=shift_info+ "\n"
         return text_info
-        #処理が終わったらwindowを閉じる
+#処理が終わったらwindowを閉じる
     def window_finish(self):
         self.driver.close()
         self.driver.quit()
@@ -145,8 +133,7 @@ class JobCan:
         )
         print(response.json())
 
-#text_info=result=text
-
+#Main routine
 if __name__ == '__main__':
     driver = JobCan()
     driver.open_url('http://jobcan.jp/login/client/?client_login_id=all-SHIRUCAFE')
