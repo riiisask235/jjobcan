@@ -4,7 +4,7 @@ import datetime
 import requests
 from bs4 import BeautifulSoup
 import re
-import pandas
+import json
 #ActionChainsを使う時は、下記のようにActionChainsのクラスをロードする
 #from selenium.webdriver.common.action_chains import ActionChains
 from selenium.webdriver.support.ui import Select
@@ -14,6 +14,7 @@ import settings
 
 LOGIN_ID = settings.ID
 PASSWORD = settings.PWD
+TOKEN = settings.TOKEN
 
 class JobCan:
     def __init__(self):
@@ -47,7 +48,6 @@ class JobCan:
         dropdown = self.driver.find_element_by_id("type-combo")
         select_dropdown = Select(dropdown)
         select_dropdown.select_by_value("day2")
-
     def select_calender(self):
 #表示する日程(今日)を選択
         today = datetime.date.today()
@@ -58,16 +58,23 @@ class JobCan:
         dropdown2 = self.driver.find_element_by_name("from[day2][y]")
         dropdown2.send_keys(year)
         select_dropdown2 = Select(dropdown2)
-#select_dropdown2.select_by_value("2021")
+    #    select_dropdown2.select_by_value("2021")
         dropdown3 = self.driver.find_element_by_name("from[day2][m]")
-        dropdown3.send_keys(month)
+        smonth = str(month)
+        if day>=1 and day<=9:
+            smonth = "0"+str(month)
+        dropdown3.send_keys(smonth)
         select_dropdown3 = Select(dropdown3)
-#select_dropdown3.select_by_value("4")
+    #    select_dropdown3.select_by_value("6")
         dropdown4 = self.driver.find_element_by_name("from[day2][d]")
-        dropdown4.send_keys(day)
+        sday = str(day)
+        if day>=1 and day<=9:
+            sday = "0"+str(day)
+        dropdown4.send_keys(sday)
         select_dropdown4 = Select(dropdown4)
-#select_dropdown4.select_by_value("22")
+    #    select_dropdown4.select_by_value("2")
 #表示のボタンを押す
+    def display_button(self):
         self.driver.find_element_by_xpath('//*[@class="btn btn-info"]').click()
 
     def save_screenshot(self):
@@ -76,18 +83,17 @@ class JobCan:
         for i in range(5):
             el_html.send_keys(Keys.PAGE_DOWN)
 
-        w = self.driver.execute_script("return document.body.scrollWidth;")
-        h = self.driver.execute_script("return document.body.scrollHeight;")
+        width = self.driver.execute_script("return document.body.scrollWidth;")
+        height = self.driver.execute_script("return document.body.scrollHeight;")
 # set window size
-        self.driver.set_window_size(w,h)
+        self.driver.set_window_size(width,height)
 #スクショを取る
-        self.driver.save_screenshot("FILENAME.jpg")
+        self.driver.save_screenshot("FILENAME.png")
 
     def get_shift_list(self):
 #driver.page_sourceで今開いてるページのソースを取得できる
         page_source = self.driver.page_source
         soup = BeautifulSoup(page_source, 'html.parser')
-
 #シフトテーブルを選択。tableタグが他にもあるので配列から特定
         shift_list = soup.find_all ("table")[5]
 #find_allで<tr>タグを全部とる(リストで返ってくる)
@@ -97,23 +103,45 @@ class JobCan:
 # #空リストをつくる
         result = []
 # #member_listをfor文で回す
-# #for文はリスト型データを回すのに役立つ(長さが限定的、決まっている)
-# #while文は長さが不確定のモノ(無限ループ)
+# #for文はリスト型データを回すのに役立つ(長さが限定的、決まっている) while文は長さが不確定のモノ(無限ループ)
         for member in member_list:
 # #<td>はテーブルの1マス1マスを示す
             coloms = member.find_all("td")
-            for i in range(2):
-                result.append(coloms[i])
-# #空リストをつくる
-        tame = ""
-        for j in result:
-            kame = j.get_text()
-            tame+=kame+ "\n"
-        print(tame+"本日も１日頑張りましょう(´▽｀*)")
-#処理が終わったらwindowを閉じる
+            for info in range(2):
+                result.append(coloms[info])
+# #空リスト??をつくる
+        text_info = ""
+        for arrange in result:
+            shift_info = arrange.get_text()
+            text_info+=shift_info+ "\n"
+        return text_info
+        #処理が終わったらwindowを閉じる
+    def window_finish(self):
         self.driver.close()
         self.driver.quit()
 
+    def slack_api(self,text,api):
+        file_name="FILENAME.png"
+        file_data = open(f"./{file_name}", 'rb').read()
+        files = {
+            "file": (file_name, file_data, "image/png"),
+        }
+        data = {
+            "initial_comment":"<!channel>"+"\n"+text+"\n"+"本日も１日頑張りましょう:heart_eyes:",
+            "channels":"C0246CS1C0G",
+            "token": api,
+            "title": "本日のシフト",
+            "filetype": "png",
+        }
+        post_message_url = "https://slack.com/api/files.upload"
+        response = requests.post(
+            post_message_url,
+            data=data,
+            files=files,
+        )
+        print(response.json())
+
+#text_info=result=text
 
 if __name__ == '__main__':
     driver = JobCan()
@@ -122,5 +150,8 @@ if __name__ == '__main__':
     driver.select_shift_page()
     driver.select_line_shift()
     driver.select_calender()
+    driver.display_button()
     driver.save_screenshot()
-    driver.get_shift_list()
+    result = driver.get_shift_list()
+    driver.slack_api(result,TOKEN)
+    driver.window_finish()

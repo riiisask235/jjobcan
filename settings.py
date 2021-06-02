@@ -9,3 +9,4 @@ load_dotenv(dotenv_path)
 
 ID = os.environ.get("LOGIN_ID")
 PWD = os.environ.get("PASSWORD")
+TOKEN = os.environ.get("TOKEN")
