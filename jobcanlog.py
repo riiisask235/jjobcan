@@ -1,4 +1,5 @@
 from selenium import webdriver
+import chromedriver_binary
 from time import sleep
 import datetime
 import requests
@@ -18,7 +19,7 @@ TOKEN = settings.TOKEN
 
 class JobCan:
     def __init__(self):
-        self.driver = webdriver.Chrome('C:\work\chromedriver_win32\chromedriver')
+        self.driver = webdriver.Chrome()
 
 #変数error_flgはエラーの判定に使うフラグ。最初はFalseを設定しておく
 #そして途中でエラーが発生した場合はTrueを設定して、以降の処理をスキップする判定に使用
