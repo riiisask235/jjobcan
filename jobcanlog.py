@@ -10,7 +10,7 @@ import settings
 from selenium.webdriver.support.ui import Select
 from selenium.webdriver.support.select import Select
 from selenium.webdriver.common.keys import Keys
-from selenium.webdriver.chrome.options import Options
+#from selenium.webdriver.chrome.options import Options
 
 LOGIN_ID = settings.ID
 PASSWORD = settings.PWD
@@ -18,8 +18,8 @@ TOKEN = settings.TOKEN
 
 class JobCan:
     def __init__(self):
-         option = Options()
-         option.add_argument('--headless')
+         # option = Options()
+         # option.add_argument('--headless')
          self.driver = webdriver.Chrome()
 #変数error_flgはエラーの判定に使うフラグ。最初はFalseを設定しておく
 #そして途中でエラーが発生した場合はTrueを設定して、以降の処理をスキップする判定に使用
@@ -120,7 +120,7 @@ class JobCan:
         }
         data = {
             "initial_comment":"<!channel>"+"\n"+text+"\n"+"本日も１日頑張りましょう:heart_eyes:",
-            "channels":"C01RV0A6FE1",
+            "channels":"C0246CS1C0G",
             "token": api,
             "title": "本日のシフト",
             "filetype": "png",
