@@ -10,7 +10,7 @@ import settings
 from selenium.webdriver.support.ui import Select
 from selenium.webdriver.support.select import Select
 from selenium.webdriver.common.keys import Keys
-#from selenium.webdriver.chrome.options import Options
+from selenium.webdriver.chrome.options import Options
 
 LOGIN_ID = settings.ID
 PASSWORD = settings.PWD
@@ -18,8 +18,8 @@ TOKEN = settings.TOKEN
 
 class JobCan:
     def __init__(self):
-         # option = Options()
-         # option.add_argument('--headless')
+         option = Options()
+         option.add_argument('--headless')
          self.driver = webdriver.Chrome()
 #変数error_flgはエラーの判定に使うフラグ。最初はFalseを設定しておく
 #そして途中でエラーが発生した場合はTrueを設定して、以降の処理をスキップする判定に使用
@@ -107,6 +107,7 @@ class JobCan:
             shift_info = arrange.get_text()
             text_info+=shift_info+ "\n"
         return text_info
+        print(text_info)
 #処理が終わったらwindowを閉じる
     def window_finish(self):
         self.driver.close()
@@ -131,7 +132,7 @@ class JobCan:
             data=data,
             files=files,
         )
-        print(response.json())
+#        print(response.json())
 
 #Main routine
 if __name__ == '__main__':
